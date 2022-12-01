@@ -85,22 +85,23 @@ QMarkdownTextEdit::QMarkdownTextEdit(QWidget *parent, bool initHighlighter)
             &QMarkdownTextEdit::adjustRightMargin);
     connect(this, &QPlainTextEdit::cursorPositionChanged, this,
             &QMarkdownTextEdit::centerTheCursor);
-    connect(verticalScrollBar(), &QScrollBar::valueChanged, this, [this](int) {
-        _lineNumArea->update();
-    });
+    connect(verticalScrollBar(), &QScrollBar::valueChanged, this,
+            [this](int) { _lineNumArea->update(); });
     connect(this, &QPlainTextEdit::cursorPositionChanged, this, [this]() {
         _lineNumArea->update();
 
-        auto oldArea = blockBoundingGeometry(_textCursor.block()).translated(contentOffset());
+        auto oldArea = blockBoundingGeometry(_textCursor.block())
+                           .translated(contentOffset());
         _textCursor = textCursor();
-        auto newArea = blockBoundingGeometry(_textCursor.block()).translated(contentOffset());
+        auto newArea = blockBoundingGeometry(_textCursor.block())
+                           .translated(contentOffset());
         auto areaToUpdate = oldArea | newArea;
         viewport()->update(areaToUpdate.toRect());
     });
-    connect(document(), &QTextDocument::blockCountChanged,
-            this, &QMarkdownTextEdit::updateLineNumberAreaWidth);
-    connect(this, &QPlainTextEdit::updateRequest,
-            this, &QMarkdownTextEdit::updateLineNumberArea);
+    connect(document(), &QTextDocument::blockCountChanged, this,
+            &QMarkdownTextEdit::updateLineNumberAreaWidth);
+    connect(this, &QPlainTextEdit::updateRequest, this,
+            &QMarkdownTextEdit::updateLineNumberArea);
 
     updateSettings();
 
@@ -116,29 +117,22 @@ void QMarkdownTextEdit::setLineNumbersOtherLineColor(QColor color) {
     _lineNumArea->setOtherLineColor(std::move(color));
 }
 
-void QMarkdownTextEdit::setSearchWidgetDebounceDelay(uint debounceDelay)
-{
+void QMarkdownTextEdit::setSearchWidgetDebounceDelay(uint debounceDelay) {
     _debounceDelay = debounceDelay;
     searchWidget()->setDebounceDelay(_debounceDelay);
 }
 
-void QMarkdownTextEdit::setHighlightCurrentLine(bool set)
-{
+void QMarkdownTextEdit::setHighlightCurrentLine(bool set) {
     _highlightCurrentLine = set;
 }
 
-bool QMarkdownTextEdit::highlightCurrentLine()
-{
-    return _highlightCurrentLine;
-}
+bool QMarkdownTextEdit::highlightCurrentLine() { return _highlightCurrentLine; }
 
-void QMarkdownTextEdit::setCurrentLineHighlightColor(const QColor &color)
-{
+void QMarkdownTextEdit::setCurrentLineHighlightColor(const QColor &color) {
     _currentLineHighlightColor = color;
 }
 
-QColor QMarkdownTextEdit::currentLineHighlightColor()
-{
+QColor QMarkdownTextEdit::currentLineHighlightColor() {
     return _currentLineHighlightColor;
 }
 
@@ -259,12 +253,14 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             return bracketClosingCheck(QLatin1Char('['), QLatin1Char(']'));
         } else if (keyEvent->key() == Qt::Key_Greater) {
             return bracketClosingCheck(QLatin1Char('<'), QLatin1Char('>'));
-        } else if ((keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter) &&
+        } else if ((keyEvent->key() == Qt::Key_Return ||
+                    keyEvent->key() == Qt::Key_Enter) &&
                    keyEvent->modifiers().testFlag(Qt::ShiftModifier)) {
             QTextCursor cursor = this->textCursor();
             cursor.insertText("  \n");
             return true;
-        } else if ((keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter) &&
+        } else if ((keyEvent->key() == Qt::Key_Return ||
+                    keyEvent->key() == Qt::Key_Enter) &&
                    keyEvent->modifiers().testFlag(Qt::ControlModifier)) {
             QTextCursor cursor = this->textCursor();
             cursor.movePosition(QTextCursor::EndOfBlock);
@@ -359,7 +355,8 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
                 }
             }
             return QPlainTextEdit::eventFilter(obj, event);
-        } else if (keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter) {
+        } else if (keyEvent->key() == Qt::Key_Return ||
+                   keyEvent->key() == Qt::Key_Enter) {
             return handleReturnEntered();
         } else if ((keyEvent->key() == Qt::Key_F3)) {
             _searchWidget->doSearch(
@@ -381,26 +378,30 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
             moveTextUpDown(true);
             return true;
 #ifdef Q_OS_MAC
-        // https://github.com/pbek/QOwnNotes/issues/1593
-        // https://github.com/pbek/QOwnNotes/issues/2643
+            // https://github.com/pbek/QOwnNotes/issues/1593
+            // https://github.com/pbek/QOwnNotes/issues/2643
         } else if (keyEvent->key() == Qt::Key_Home) {
             QTextCursor cursor = textCursor();
             // Meta is Control on macOS
             cursor.movePosition(
-                keyEvent->modifiers().testFlag(Qt::MetaModifier) ?
-                    QTextCursor::Start : QTextCursor::StartOfLine,
-                keyEvent->modifiers().testFlag(Qt::ShiftModifier) ?
-                    QTextCursor::KeepAnchor : QTextCursor::MoveAnchor);
+                keyEvent->modifiers().testFlag(Qt::MetaModifier)
+                    ? QTextCursor::Start
+                    : QTextCursor::StartOfLine,
+                keyEvent->modifiers().testFlag(Qt::ShiftModifier)
+                    ? QTextCursor::KeepAnchor
+                    : QTextCursor::MoveAnchor);
             this->setTextCursor(cursor);
             return true;
         } else if (keyEvent->key() == Qt::Key_End) {
             QTextCursor cursor = textCursor();
             // Meta is Control on macOS
             cursor.movePosition(
-                keyEvent->modifiers().testFlag(Qt::MetaModifier) ?
-                    QTextCursor::End : QTextCursor::EndOfLine,
-                keyEvent->modifiers().testFlag(Qt::ShiftModifier) ?
-                    QTextCursor::KeepAnchor : QTextCursor::MoveAnchor);
+                keyEvent->modifiers().testFlag(Qt::MetaModifier)
+                    ? QTextCursor::End
+                    : QTextCursor::EndOfLine,
+                keyEvent->modifiers().testFlag(Qt::ShiftModifier)
+                    ? QTextCursor::KeepAnchor
+                    : QTextCursor::MoveAnchor);
             this->setTextCursor(cursor);
             return true;
 #endif
@@ -434,7 +435,7 @@ bool QMarkdownTextEdit::eventFilter(QObject *obj, QEvent *event) {
     } else if (event->type() == QEvent::MouseButtonDblClick) {
         _mouseButtonDown = true;
     } else if (event->type() == QEvent::Wheel) {
-        auto *wheel = dynamic_cast<QWheelEvent*>(event);
+        auto *wheel = dynamic_cast<QWheelEvent *>(event);
 
         // emit zoom signals
         if (wheel->modifiers() == Qt::ControlModifier) {
@@ -618,8 +619,7 @@ void QMarkdownTextEdit::moveTextUpDown(bool up) {
     setTextCursor(move);
 }
 
-void QMarkdownTextEdit::setLineNumberEnabled(bool enabled)
-{
+void QMarkdownTextEdit::setLineNumberEnabled(bool enabled) {
     _lineNumArea->setLineNumAreaEnabled(enabled);
     updateLineNumberAreaWidth(0);
 }
@@ -684,10 +684,12 @@ bool QMarkdownTextEdit::handleBracketClosing(const QChar openingCharacter,
 
     // get the current text from the block (inserted character not included)
     // Remove whitespace at start of string (e.g. in multilevel-lists).
-    const QString text = cursor.block().text().remove(QRegularExpression("^\\s+"));
+    const QString text =
+        cursor.block().text().remove(QRegularExpression("^\\s+"));
 
     const int pib = cursor.positionInBlock();
-    bool isPreviousAsterisk = pib > 0 && pib < text.length() && text.at(pib - 1) == '*';
+    bool isPreviousAsterisk =
+        pib > 0 && pib < text.length() && text.at(pib - 1) == '*';
     bool isNextAsterisk = pib < text.length() && text.at(pib) == '*';
     bool isMaybeBold = isPreviousAsterisk && isNextAsterisk;
     if (pib < text.length() && !isMaybeBold && !text.at(pib).isSpace()) {
@@ -733,7 +735,10 @@ bool QMarkdownTextEdit::handleBracketClosing(const QChar openingCharacter,
 #if QT_VERSION < QT_VERSION_CHECK(5, 12, 0)
         if (QRegExp(QStringLiteral("[^`]*``")).exactMatch(text)) {
 #else
-        if (QRegularExpression(QRegularExpression::anchoredPattern(QStringLiteral("[^`]*``"))).match(text).hasMatch()) {
+        if (QRegularExpression(
+                QRegularExpression::anchoredPattern(QStringLiteral("[^`]*``")))
+                .match(text)
+                .hasMatch()) {
 #endif
             cursor.insertText(QStringLiteral("``"));
             cursorSubtract = 3;
@@ -901,7 +906,9 @@ bool QMarkdownTextEdit::handleBackspaceEntered() {
     int block = cursor.block().blockNumber();
 
     if (_highlighter)
-        if (_highlighter->isPosInACodeSpan(block, positionInBlock - 1))
+        if (_highlighter->isPosInRangeType(
+                block, positionInBlock - 1,
+                MarkdownHighlighter::RangeType::CodeSpan))
             return false;
 
     // return if backspace was pressed at the beginning of a block
@@ -924,7 +931,7 @@ bool QMarkdownTextEdit::handleBackspaceEntered() {
         return handleCharRemoval(MarkdownHighlighter::RangeType::CodeSpan,
                                  block, positionInBlock - 1);
 
-    //handle removal of ", ', and brackets
+    // handle removal of ", ', and brackets
 
     // is it opener?
     int pos = _openingCharacters.indexOf(charInFront);
@@ -989,18 +996,14 @@ bool QMarkdownTextEdit::handleBackspaceEntered() {
 }
 
 bool QMarkdownTextEdit::handleCharRemoval(MarkdownHighlighter::RangeType type,
-                                          int block, int position)
-{
-    if (!_highlighter)
-        return false;
+                                          int block, int position) {
+    if (!_highlighter) return false;
 
     auto range = _highlighter->findPositionInRanges(type, block, position);
-    if (range == QPair<int, int>{-1, -1})
-        return false;
+    if (range == QPair<int, int>{-1, -1}) return false;
 
     int charToRemovePos = range.first;
-    if (position == range.first)
-        charToRemovePos = range.second;
+    if (position == range.first) charToRemovePos = range.second;
 
     QTextCursor cursor = textCursor();
     auto gpos = cursor.position();
@@ -1018,19 +1021,18 @@ bool QMarkdownTextEdit::handleCharRemoval(MarkdownHighlighter::RangeType type,
     return false;
 }
 
-void QMarkdownTextEdit::updateLineNumAreaGeometry()
-{
+void QMarkdownTextEdit::updateLineNumAreaGeometry() {
     const auto contentsRect = this->contentsRect();
     const QRect newGeometry = {contentsRect.left(), contentsRect.top(),
-                               _lineNumArea->sizeHint().width(), contentsRect.height()};
+                               _lineNumArea->sizeHint().width(),
+                               contentsRect.height()};
     auto oldGeometry = _lineNumArea->geometry();
     if (newGeometry != oldGeometry) {
         _lineNumArea->setGeometry(newGeometry);
     }
 }
 
-void QMarkdownTextEdit::resizeEvent(QResizeEvent *event)
-{
+void QMarkdownTextEdit::resizeEvent(QResizeEvent *event) {
     QPlainTextEdit::resizeEvent(event);
     updateLineNumAreaGeometry();
 }
@@ -1404,8 +1406,7 @@ void QMarkdownTextEdit::setText(const QString &text) { setPlainText(text); }
 void QMarkdownTextEdit::setPlainText(const QString &text) {
     // clear the dirty blocks vector to increase performance and prevent
     // a possible crash in QSyntaxHighlighter::rehighlightBlock
-    if (_highlighter)
-        _highlighter->clearDirtyBlocks();
+    if (_highlighter) _highlighter->clearDirtyBlocks();
 
     QPlainTextEdit::setPlainText(text);
     adjustRightMargin();
@@ -1484,10 +1485,8 @@ bool QMarkdownTextEdit::handleReturnEntered() {
     QString currentLine = currentLineText.trimmed();
     QChar char0;
     QChar char1;
-    if (currentLine.length() >= 1)
-        char0 = currentLine.at(0);
-    if (currentLine.length() >= 2)
-        char1 = currentLine.at(1);
+    if (currentLine.length() >= 1) char0 = currentLine.at(0);
+    if (currentLine.length() >= 2) char1 = currentLine.at(1);
     const bool inList =
         ((char0 == QLatin1Char('*') || char0 == QLatin1Char('-') ||
           char0 == QLatin1Char('+')) &&
@@ -1643,12 +1642,12 @@ void QMarkdownTextEdit::setAutoTextOptions(AutoTextOptions options) {
     _autoTextOptions = options;
 }
 
-void QMarkdownTextEdit::updateLineNumberArea(const QRect rect, int dy)
-{
+void QMarkdownTextEdit::updateLineNumberArea(const QRect rect, int dy) {
     if (dy)
         _lineNumArea->scroll(0, dy);
     else
-        _lineNumArea->update(0, rect.y(), _lineNumArea->sizeHint().width(), rect.height());
+        _lineNumArea->update(0, rect.y(), _lineNumArea->sizeHint().width(),
+                             rect.height());
 
     updateLineNumAreaGeometry();
 
@@ -1657,14 +1656,15 @@ void QMarkdownTextEdit::updateLineNumberArea(const QRect rect, int dy)
     }
 }
 
-void QMarkdownTextEdit::updateLineNumberAreaWidth(int)
-{
+void QMarkdownTextEdit::updateLineNumberAreaWidth(int) {
     QSignalBlocker blocker(this);
     const auto oldMargins = viewportMargins();
-    const int width = _lineNumArea->isLineNumAreaEnabled() ?
-           _lineNumArea->sizeHint().width() + _lineNumberLeftMarginOffset :
-           oldMargins.left();
-    const auto newMargins = QMargins{width, oldMargins.top(), oldMargins.right(), oldMargins.bottom()};
+    const int width =
+        _lineNumArea->isLineNumAreaEnabled()
+            ? _lineNumArea->sizeHint().width() + _lineNumberLeftMarginOffset
+            : oldMargins.left();
+    const auto newMargins = QMargins{width, oldMargins.top(),
+                                     oldMargins.right(), oldMargins.bottom()};
 
     if (newMargins != oldMargins) {
         setViewportMargins(newMargins);
@@ -1802,12 +1802,14 @@ void QMarkdownTextEdit::paintEvent(QPaintEvent *e) {
         // Current line highlight
         QTextCursor cursor = textCursor();
         if (highlightCurrentLine() && cursor.block() == block) {
-            QTextLine line = block.layout()->lineForTextPosition(cursor.positionInBlock());
+            QTextLine line =
+                block.layout()->lineForTextPosition(cursor.positionInBlock());
             QRectF lineRect = line.rect();
             lineRect.moveTop(lineRect.top() + r.top());
             lineRect.setLeft(0.);
             lineRect.setRight(viewportRect.width());
-            painter.fillRect(lineRect.toAlignedRect(), currentLineHighlightColor());
+            painter.fillRect(lineRect.toAlignedRect(),
+                             currentLineHighlightColor());
         }
 
         block = block.next();

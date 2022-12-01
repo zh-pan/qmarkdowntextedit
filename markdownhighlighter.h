@@ -68,14 +68,14 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
                state == MarkdownHighlighter::CodeBlockTildeEnd;
     }
 
-    enum class RangeType {
-        CodeSpan,
-        Emphasis
-    };
+    enum class RangeType { CodeSpan = 0x01, Emphasis = 0x02, Math = 0x04 };
+    Q_DECLARE_FLAGS(RangeTypes, RangeType)
 
-    QPair<int, int> findPositionInRanges(MarkdownHighlighter::RangeType type, int blockNum, int pos) const;
-    bool isPosInACodeSpan(int blockNumber, int position) const;
-    QPair<int, int> getSpanRange(RangeType rangeType, int blockNumber, int position) const;
+    QPair<int, int> findPositionInRanges(MarkdownHighlighter::RangeTypes type,
+                                         int blockNum, int pos) const;
+    bool isPosInRangeType(int blockNumber, int position, RangeTypes type) const;
+    QPair<int, int> getSpanRange(RangeType rangeType, int blockNumber,
+                                 int position) const;
 
     // we used some predefined numbers here to be compatible with
     // the peg-markdown parser
@@ -107,6 +107,7 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
         CheckBoxUnChecked,
         CheckBoxChecked,
         StUnderline,
+        MathBlock,
 
         // code highlighting
         CodeKeyWord = 1000,
@@ -125,6 +126,7 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
         CodeBlockEnd = 100,
         HeadlineEnd,
         FrontmatterBlockEnd,
+        MathBlockEnd,
 
         // languages
         /*********
@@ -204,11 +206,9 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
         int end;
         RangeType type;
         InlineRange() = default;
-        InlineRange(int begin_, int end_, RangeType type_) :
-            begin{begin_}, end{end_}, type{type_}
-        {}
+        InlineRange(int begin_, int end_, RangeType type_)
+            : begin{begin_}, end{end_}, type{type_} {}
     };
-
 
     void highlightBlock(const QString &text) override;
 
@@ -245,8 +245,8 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
 
     void highlightInlineRules(const QString &text);
 
-    int highlightInlineSpans(const QString &text,
-                                               int currentPos, const QChar c);
+    int highlightInlineSpans(const QString &text, int currentPos,
+                             const QChar c);
 
     void highlightEmAndStrong(const QString &text, const int pos);
 
@@ -286,6 +286,13 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
 
     void taggerScriptHighlighter(const QString &text);
 
+    /******************************
+     *  MATH HIGHLIGHTING FUNCTIONS
+     ******************************/
+    void highlightMathFence(const QString &text);
+
+    int highlightInlineMath(const QString &text, int currentPos);
+
     void addDirtyBlock(const QTextBlock &block);
 
     void reHighlightDirtyBlocks();
@@ -296,7 +303,7 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
     HighlightingOptions _highlightingOptions;
     QTimer *_timer;
     QVector<QTextBlock> _dirtyTextBlocks;
-    QVector<QPair<int,int>> _linkRanges;
+    QVector<QPair<int, int>> _linkRanges;
 
     QHash<int, QVector<InlineRange>> _ranges;
 
@@ -305,3 +312,5 @@ class MarkdownHighlighter : public QSyntaxHighlighter {
     static QHash<QString, HighlighterState> _langStringToEnum;
     static constexpr int tildeOffset = 300;
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(MarkdownHighlighter::RangeTypes)

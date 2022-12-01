@@ -60,6 +60,7 @@ if(QMARKDOWNTEXTEDIT_EXE)
         mainwindow.h
         mainwindow.ui
     )
+    qt_add_resources(SOURCE_FILES media.qrc)
 
     add_executable(qmarkdowntextedit-exe ${SOURCE_FILES})
     target_link_libraries(qmarkdowntextedit-exe Qt${QT_VERSION_MAJOR}::Widgets ${INTL_LDFLAGS} qmarkdowntextedit)
