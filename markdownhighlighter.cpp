@@ -505,8 +505,8 @@ void MarkdownHighlighter::highlightMarkdown(const QString &text) {
     const bool isBlockCodeBlock = isCodeBlock(previousBlockState()) ||
                                   text.startsWith(QLatin1String("```")) ||
                                   text.startsWith(QLatin1String("~~~"));
-    const bool isBlockMathBlock = previousBlockState() == MathBlock ||
-                                  text.startsWith(QLatin1String("$$"));
+    const bool isBlockMathBlock =
+        previousBlockState() == MathBlock || text == QLatin1String("$$");
 
     if (!text.isEmpty() && !isBlockCodeBlock && !isBlockMathBlock) {
         highlightAdditionalRules(_highlightingRules, text);
@@ -2403,9 +2403,9 @@ void MarkdownHighlighter::setHighlightingOptions(
 
 void MarkdownHighlighter::highlightMathFence(const QString &text) {
     if (text == QLatin1String("$$")) {
-        if (previousBlockState() == NoState) {
+        if (previousBlockState() != MathBlock) {
             setCurrentBlockState(MathBlock);
-        } else if (previousBlockState() == MathBlock) {
+        } else {
             setCurrentBlockState(MathBlockEnd);
         }
         setFormat(0, text.length(), _formats[MaskedSyntax]);
